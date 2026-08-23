@@ -14,6 +14,19 @@ type Verdict = {
   conscience: string;
 };
 
+type SavedVerdict = {
+  id: string;
+  caseNumber: string;
+  story: string;
+  title: string;
+  order: string;
+  mood: Mood;
+  score: number;
+  date: string;
+};
+
+const archiveKey = "my-verdict-archive";
+
 const moods: Mood[] = ["다정하게", "단호하게", "웃기게"];
 
 const samples = [
@@ -113,10 +126,28 @@ export default function CourtPage() {
     if (!canSubmit) return;
     const list = verdicts[mood];
     const nextIndex = result ? (verdictIndex + 1) % list.length : 0;
+    const nextResult = list[nextIndex];
+    const nextCaseNumber = makeCaseNumber();
     setVerdictIndex(nextIndex);
-    setResult(list[nextIndex]);
-    setCaseNumber(makeCaseNumber());
+    setResult(nextResult);
+    setCaseNumber(nextCaseNumber);
     setShared(false);
+    const savedVerdict: SavedVerdict = {
+      id: `${Date.now()}-${nextCaseNumber}`,
+      caseNumber: nextCaseNumber,
+      story: story.trim(),
+      title: nextResult.title,
+      order: nextResult.order,
+      mood,
+      score: nextResult.score,
+      date: new Date().toISOString(),
+    };
+    try {
+      const current = JSON.parse(window.localStorage.getItem(archiveKey) || "[]") as SavedVerdict[];
+      window.localStorage.setItem(archiveKey, JSON.stringify([savedVerdict, ...current].slice(0, 50)));
+    } catch {
+      // 저장 공간을 사용할 수 없어도 판결 자체는 계속 진행합니다.
+    }
     window.setTimeout(() => {
       document.getElementById("verdict")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 40);
@@ -152,6 +183,7 @@ export default function CourtPage() {
         </a>
         <div className="court-account">
           <span className="open-status"><i /> 오늘도 재판 중</span>
+          <Link className="archive-link" href="/archive">판결 보관소</Link>
           <Link href="/login">로그아웃</Link>
         </div>
       </header>
@@ -229,7 +261,7 @@ export default function CourtPage() {
           <span>둘.</span>
           <strong>현실적인 해결보다<br />오늘은 속 시원함이 먼저입니다.</strong>
         </div>
-        <small>입력한 내용은 이 기기에 저장되지 않아요.</small>
+        <small>판결 결과는 이 기기의 판결 보관소에만 저장돼요.</small>
       </section>
 
       {result && (
