@@ -77,11 +77,27 @@ function AuthShell({ view, children }: { view: AuthView; children: ReactNode }) 
 export function LoginView() {
   const router = useRouter();
   const [notice, setNotice] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setLoading(true);
+    setError("");
+    const form = new FormData(event.currentTarget);
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: form.get("username"), password: form.get("password") }),
+    });
+    const data = await response.json() as { error?: string };
+    setLoading(false);
+    if (!response.ok) {
+      setError(data.error || "로그인하지 못했습니다.");
+      return;
+    }
     setNotice("확인되었습니다. 판결소로 입장합니다.");
-    window.setTimeout(() => router.push("/court"), 500);
+    window.setTimeout(() => router.push("/court"), 350);
   }
 
   return (
@@ -99,25 +115,28 @@ export function LoginView() {
             <input type="checkbox" name="remember" />
             <span>아이디 기억하기</span>
           </label>
-          <button className="auth-primary" type="submit">판결소 입장하기 <b>→</b></button>
+          <button className="auth-primary" type="submit" disabled={loading}>{loading ? "확인 중..." : "판결소 입장하기"} <b>→</b></button>
           {notice && <p className="auth-notice" role="status">{notice}</p>}
+          {error && <p className="auth-error" role="alert">{error}</p>}
         </form>
         <nav className="auth-links" aria-label="계정 메뉴">
           <Link href="/signup">회원가입</Link>
           <Link href="/find-id">아이디 찾기</Link>
           <Link href="/forgot-password">비밀번호 찾기</Link>
         </nav>
-        <p className="prototype-note">현재는 프론트엔드 확인 단계로, 어떤 값으로도 입장할 수 있어요.</p>
+        <p className="prototype-note">계정과 판결 기록은 안전한 서버 데이터베이스에 저장됩니다.</p>
       </div>
     </AuthShell>
   );
 }
 
 export function SignupView() {
+  const router = useRouter();
   const [complete, setComplete] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     if (form.get("new-password") !== form.get("confirm-password")) {
@@ -125,6 +144,23 @@ export function SignupView() {
       return;
     }
     setError("");
+    setLoading(true);
+    const response = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: form.get("name"),
+        username: form.get("new-username"),
+        email: form.get("email"),
+        password: form.get("new-password"),
+      }),
+    });
+    const data = await response.json() as { error?: string };
+    setLoading(false);
+    if (!response.ok) {
+      setError(data.error || "회원가입을 완료하지 못했습니다.");
+      return;
+    }
     setComplete(true);
   }
 
@@ -150,7 +186,7 @@ export function SignupView() {
                 <input type="checkbox" required />
                 <span><b>[필수]</b> 이용약관 및 개인정보 처리방침에 동의합니다.</span>
               </label>
-              <button className="auth-primary" type="submit">내 편 등록하기 <b>→</b></button>
+              <button className="auth-primary" type="submit" disabled={loading}>{loading ? "계정 생성 중..." : "내 편 등록하기"} <b>→</b></button>
               {error && <p className="auth-error" role="alert">{error}</p>}
             </form>
             <p className="auth-return">이미 계정이 있나요? <Link href="/login">로그인</Link></p>
@@ -159,8 +195,8 @@ export function SignupView() {
           <div className="auth-complete">
             <span className="complete-stamp">등록<br />완료</span>
             <h2>이제 우리가<br />당신 편이에요.</h2>
-            <p>회원가입 화면 확인이 완료되었습니다.<br />백엔드 연결 후 실제 계정이 생성돼요.</p>
-            <Link className="auth-primary" href="/login">로그인하러 가기 <b>→</b></Link>
+            <p>실제 계정이 생성되고 로그인되었습니다.<br />이제 판결 기록이 계정에 안전하게 보관돼요.</p>
+            <button className="auth-primary" type="button" onClick={() => router.push("/court")}>판결소 입장하기 <b>→</b></button>
           </div>
         )}
       </div>
@@ -169,7 +205,25 @@ export function SignupView() {
 }
 
 export function FindIdView() {
-  const [result, setResult] = useState(false);
+  const [result, setResult] = useState("");
+  const [error, setError] = useState("");
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    const form = new FormData(event.currentTarget);
+    const response = await fetch("/api/auth/find-id", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: form.get("find-name"), email: form.get("find-email") }),
+    });
+    const data = await response.json() as { error?: string; maskedUsername?: string };
+    if (!response.ok) {
+      setError(data.error || "아이디를 찾지 못했습니다.");
+      return;
+    }
+    setResult(data.maskedUsername || "");
+  }
   return (
     <AuthShell view="find-id">
       <div className="auth-form-wrap">
@@ -179,16 +233,17 @@ export function FindIdView() {
           <p>회원정보와 일치하는 아이디를 확인해 드려요.</p>
         </div>
         {!result ? (
-          <form className="auth-form" onSubmit={(event) => { event.preventDefault(); setResult(true); }}>
+          <form className="auth-form" onSubmit={submit}>
             <Field id="find-name" label="이름" placeholder="가입 시 입력한 이름" autoComplete="name" />
             <Field id="find-email" label="이메일" type="email" placeholder="가입 시 입력한 이메일" autoComplete="email" />
             <button className="auth-primary" type="submit">아이디 확인하기 <b>→</b></button>
+            {error && <p className="auth-error" role="alert">{error}</p>}
           </form>
         ) : (
           <div className="find-result" role="status">
             <span>확인된 아이디</span>
-            <strong>myv****</strong>
-            <small>실제 아이디 조회는 백엔드 연결 후 동작합니다.</small>
+            <strong>{result}</strong>
+            <small>개인정보 보호를 위해 아이디 일부를 가렸습니다.</small>
           </div>
         )}
         <div className="auth-bottom-actions">
@@ -220,7 +275,7 @@ export function ForgotPasswordView() {
           <div className="find-result sent-result" role="status">
             <span>안내 준비 완료</span>
             <strong>이메일을 확인해 주세요</strong>
-            <small>백엔드 연결 후 실제 재설정 메일이 발송됩니다.</small>
+            <small>재설정 메일 발송은 이메일 서비스 연결 후 활성화됩니다.</small>
           </div>
         )}
         <div className="auth-bottom-actions">

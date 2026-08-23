@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Filter = "전체" | "다정하게" | "단호하게" | "웃기게";
 
@@ -17,44 +18,12 @@ type SavedVerdict = {
   date: string;
 };
 
-const archiveKey = "my-verdict-archive";
-const demoVerdicts: SavedVerdict[] = [
-  {
-    id: "demo-1",
-    caseNumber: "2026-0821-317",
-    story: "친구가 한입만 먹는다더니 제 디저트의 반을 먹었어요.",
-    title: "유죄. 꽤나 유죄.",
-    order: "피고는 편의점 과자 3봉과 반성의 탕후루를 지급할 것.",
-    mood: "웃기게",
-    score: 99,
-    date: "2026-08-21T11:20:00.000Z",
-  },
-  {
-    id: "demo-2",
-    caseNumber: "2026-0818-142",
-    story: "팀장님이 퇴근 5분 전에 오늘 안으로 해달라며 일을 주셨어요.",
-    title: "참을 만큼 참았습니다",
-    order: "피고는 즉시 사과하고 다음 퇴근 시간을 온전히 보장할 것.",
-    mood: "단호하게",
-    score: 98,
-    date: "2026-08-18T09:15:00.000Z",
-  },
-  {
-    id: "demo-3",
-    caseNumber: "2026-0812-089",
-    story: "친구들이 약속 시간을 바꾸고 저에게만 늦게 알려줬어요.",
-    title: "당신의 서운함은 충분히 타당합니다",
-    order: "피고들은 다음 약속에서 원고의 시간과 메뉴 선택을 우선할 것.",
-    mood: "다정하게",
-    score: 94,
-    date: "2026-08-12T05:40:00.000Z",
-  },
-];
-
 const filters: Filter[] = ["전체", "다정하게", "단호하게", "웃기게"];
 
 export default function ArchivePage() {
+  const router = useRouter();
   const [records, setRecords] = useState<SavedVerdict[]>([]);
+  const [user, setUser] = useState<{ username: string; name: string; email: string } | null>(null);
   const [filter, setFilter] = useState<Filter>("전체");
   const [ready, setReady] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -62,14 +31,18 @@ export default function ArchivePage() {
   const [passwordError, setPasswordError] = useState("");
 
   useEffect(() => {
-    try {
-      const saved = JSON.parse(window.localStorage.getItem(archiveKey) || "[]") as SavedVerdict[];
-      setRecords(saved.length ? saved : demoVerdicts);
-    } catch {
-      setRecords(demoVerdicts);
-    }
-    setReady(true);
-  }, []);
+    Promise.all([fetch("/api/auth/me"), fetch("/api/verdicts")]).then(async ([meResponse, verdictResponse]) => {
+      if (!meResponse.ok || !verdictResponse.ok) {
+        router.replace("/login");
+        return;
+      }
+      const me = await meResponse.json() as { user: { username: string; name: string; email: string } };
+      const verdictData = await verdictResponse.json() as { verdicts: SavedVerdict[] };
+      setUser(me.user);
+      setRecords(verdictData.verdicts);
+      setReady(true);
+    });
+  }, [router]);
 
   const filtered = useMemo(
     () => filter === "전체" ? records : records.filter((record) => record.mood === filter),
@@ -85,18 +58,15 @@ export default function ArchivePage() {
   }, {});
   const mostCommonOutcome = Object.entries(outcomeCount).sort((a, b) => b[1] - a[1])[0]?.[0] || "기록 없음";
 
-  function removeRecord(id: string) {
+  async function removeRecord(id: string) {
+    const response = await fetch(`/api/verdicts?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    if (!response.ok) return;
     const next = records.filter((record) => record.id !== id);
     setRecords(next);
     setExpanded(null);
-    try {
-      window.localStorage.setItem(archiveKey, JSON.stringify(next));
-    } catch {
-      // 화면에서 삭제한 상태는 유지합니다.
-    }
   }
 
-  function resetPassword(event: FormEvent<HTMLFormElement>) {
+  async function resetPassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const next = String(form.get("archive-new-password") || "");
@@ -111,9 +81,25 @@ export default function ArchivePage() {
       setPasswordNotice("");
       return;
     }
+    const response = await fetch("/api/auth/password", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ currentPassword: form.get("archive-current-password"), newPassword: next }),
+    });
+    const data = await response.json() as { error?: string };
+    if (!response.ok) {
+      setPasswordError(data.error || "비밀번호를 변경하지 못했습니다.");
+      setPasswordNotice("");
+      return;
+    }
     setPasswordError("");
-    setPasswordNotice("새 비밀번호가 확인되었습니다. 백엔드 연결 후 실제 계정에 반영돼요.");
+    setPasswordNotice("비밀번호가 안전하게 변경되었습니다.");
     event.currentTarget.reset();
+  }
+
+  async function logout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
   }
 
   return (
@@ -134,7 +120,7 @@ export default function ArchivePage() {
           <h1>판결 보관소</h1>
           <p>당신의 마음이 정당했다는 기록을 모아두었어요.</p>
         </div>
-        <div className="profile-seal" aria-label="사용자 프로필"><span>원고</span><strong>내편이</strong></div>
+        <div className="profile-seal" aria-label="사용자 프로필"><span>원고</span><strong>{user?.name || "내편이"}</strong></div>
       </section>
 
       <section className="archive-stats" aria-label="판결 통계">
@@ -178,7 +164,7 @@ export default function ArchivePage() {
       <section className="account-settings">
         <div className="settings-intro"><span>ACCOUNT SETTINGS</span><h2>계정 설정</h2><p>로그인 정보와 계정 상태를 관리할 수 있어요.</p></div>
         <div className="settings-grid">
-          <div className="account-summary"><span>로그인 계정</span><strong>myverdict</strong><small>myv****@example.com</small><Link href="/login">로그아웃</Link></div>
+          <div className="account-summary"><span>로그인 계정</span><strong>{user?.username || "—"}</strong><small>{user?.email || "—"}</small><button type="button" onClick={logout}>로그아웃</button></div>
           <form className="password-form" onSubmit={resetPassword}>
             <div><h3>비밀번호 재설정</h3><p>안전한 비밀번호로 주기적으로 변경해 주세요.</p></div>
             <label>현재 비밀번호<input name="archive-current-password" type="password" autoComplete="current-password" required placeholder="현재 비밀번호" /></label>
@@ -189,12 +175,12 @@ export default function ArchivePage() {
             <button type="submit">비밀번호 변경하기</button>
             {passwordError && <p className="settings-error" role="alert">{passwordError}</p>}
             {passwordNotice && <p className="settings-notice" role="status">{passwordNotice}</p>}
-            <small className="settings-prototype">현재는 프론트엔드 확인 단계이며 실제 변경은 백엔드 연결 후 적용됩니다.</small>
+            <small className="settings-prototype">비밀번호는 암호화된 해시로 저장되며 다른 기기의 로그인 기록은 정리됩니다.</small>
           </form>
         </div>
       </section>
 
-      <footer><span className="footer-mark">내편</span><p>당신의 마음이 정당했다는 기록.</p><small>판결 기록은 현재 이 기기의 브라우저에만 보관됩니다.</small></footer>
+      <footer><span className="footer-mark">내편</span><p>당신의 마음이 정당했다는 기록.</p><small>판결 기록은 로그인한 계정에 안전하게 보관됩니다.</small></footer>
     </main>
   );
 }

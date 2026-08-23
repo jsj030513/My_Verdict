@@ -133,12 +133,14 @@ main {
 }
 
 .court-account { display: flex; align-items: center; gap: 18px; }
-.court-account > a {
+.court-account > a, .court-account > button {
   color: var(--muted);
   font-size: 12px;
   text-decoration: underline;
   text-underline-offset: 4px;
 }
+.court-account > button { border: 0; background: transparent; padding: 0; cursor: pointer; }
+.court-user { color: var(--wine); font-size: 11px; font-weight: 800; }
 .court-account > .archive-link {
   color: var(--ink);
   font-weight: 800;
@@ -205,7 +207,7 @@ main {
 .account-summary > span { color: #e4c8a0; font-size: 10px; }
 .account-summary > strong { margin: 23px 0 8px; font-family: Georgia, serif; font-size: 26px; }
 .account-summary > small { color: rgba(255,255,255,.55); }
-.account-summary > a { width: max-content; margin-top: auto; padding-top: 55px; color: white; font-size: 11px; text-underline-offset: 4px; }
+.account-summary > button { width: max-content; margin-top: auto; padding: 55px 0 0; border: 0; background: transparent; color: white; cursor: pointer; font-size: 11px; text-decoration: underline; text-underline-offset: 4px; }
 .password-form { display: grid; gap: 17px; }
 .password-form h3 { margin: 0 0 5px; font-family: Georgia, "Batang", serif; font-size: 23px; font-weight: 500; }
 .password-form > div > p { margin: 0; color: rgba(255,255,255,.55); font-size: 11px; }
@@ -348,6 +350,7 @@ main {
 }
 .auth-primary b { position: absolute; right: 21px; font-size: 18px; }
 .auth-primary:hover { background: var(--wine-dark); transform: translateY(-1px); }
+.auth-primary:disabled { cursor: wait; opacity: .6; transform: none; }
 .auth-notice, .auth-error { margin: -5px 0 0; text-align: center; font-size: 11px; }
 .auth-notice { color: #3d7c55; }
 .auth-error { color: var(--wine); }
@@ -769,7 +772,7 @@ footer small { color: rgba(255,255,255,.43); font-size: 10px; }
   .archive-card-detail { margin: -1px 0 20px 67px; padding: 17px; }
   .archive-card-detail > div:first-child { grid-template-columns: 40px 1fr; gap: 8px; }
   .settings-grid { grid-template-columns: 1fr; }
-  .account-summary > a { margin-top: 35px; padding-top: 0; }
+  .account-summary > button { margin-top: 35px; padding-top: 0; }
   .password-row { grid-template-columns: 1fr; }
 }
 

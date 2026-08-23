@@ -1,7 +1,8 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type Mood = "다정하게" | "단호하게" | "웃기게";
 type Outcome = "승소" | "일부 승소" | "쌍방 과실" | "패소" | "증거 불충분";
@@ -28,8 +29,6 @@ type SavedVerdict = {
   outcome: Outcome;
   date: string;
 };
-
-const archiveKey = "my-verdict-archive";
 
 const moods: Mood[] = ["다정하게", "단호하게", "웃기게"];
 const judgingMessages = [
@@ -157,6 +156,7 @@ function makeCaseNumber() {
 }
 
 export default function CourtPage() {
+  const router = useRouter();
   const [story, setStory] = useState("");
   const [mood, setMood] = useState<Mood>("웃기게");
   const [result, setResult] = useState<Verdict | null>(null);
@@ -164,6 +164,18 @@ export default function CourtPage() {
   const [shared, setShared] = useState(false);
   const [isJudging, setIsJudging] = useState(false);
   const [judgingStep, setJudgingStep] = useState(0);
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    fetch("/api/auth/me").then(async (response) => {
+      if (!response.ok) {
+        router.replace("/login");
+        return;
+      }
+      const data = await response.json() as { user: { name: string } };
+      setUserName(data.user.name);
+    });
+  }, [router]);
 
   const canSubmit = story.trim().length >= 8;
 
@@ -204,12 +216,12 @@ export default function CourtPage() {
       outcome: nextResult.outcome,
       date: new Date().toISOString(),
     };
-    try {
-      const current = JSON.parse(window.localStorage.getItem(archiveKey) || "[]") as SavedVerdict[];
-      window.localStorage.setItem(archiveKey, JSON.stringify([savedVerdict, ...current].slice(0, 50)));
-    } catch {
-      // 저장 공간을 사용할 수 없어도 판결 자체는 계속 진행합니다.
-    }
+    const saveResponse = await fetch("/api/verdicts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(savedVerdict),
+    });
+    if (saveResponse.status === 401) router.replace("/login");
     setIsJudging(false);
     window.setTimeout(() => {
       document.getElementById("verdict")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -237,6 +249,11 @@ export default function CourtPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  async function logout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
+  }
+
   return (
     <main>
       <header className="topbar">
@@ -246,8 +263,9 @@ export default function CourtPage() {
         </a>
         <div className="court-account">
           <span className="open-status"><i /> 오늘도 재판 중</span>
+          {userName && <span className="court-user">{userName} 님</span>}
           <Link className="archive-link" href="/archive">판결 보관소</Link>
-          <Link href="/login">로그아웃</Link>
+          <button type="button" onClick={logout}>로그아웃</button>
         </div>
       </header>
 
@@ -324,7 +342,7 @@ export default function CourtPage() {
           <span>둘.</span>
           <strong>현실적인 해결보다<br />오늘은 속 시원함이 먼저입니다.</strong>
         </div>
-        <small>판결 결과는 이 기기의 판결 보관소에만 저장돼요.</small>
+        <small>판결 결과는 로그인한 계정의 판결 보관소에 안전하게 저장돼요.</small>
       </section>
 
       {isJudging && (
