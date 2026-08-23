@@ -329,11 +329,12 @@ export default function CourtPage() {
 
       {isJudging && (
         <section className="ai-judging" id="ai-judging" aria-live="polite" aria-busy="true">
-          <div className="ai-courtroom" aria-hidden="true">
-            <div className="ai-antenna"><i /></div>
-            <div className="ai-judge-face"><i /><i /><b>⌣</b></div>
-            <div className="ai-judge-collar"><i /><i /></div>
-            <div className="ai-gavel"><b>▰</b><span /></div>
+          <div className={`ai-character ai-character-step-${judgingStep}`} aria-hidden="true">
+            <div className="ai-speech">
+              {judgingStep === 0 ? "음, 어디 보자…" : judgingStep === 1 ? "양쪽 말을 재는 중!" : judgingStep === 2 ? "재미도 놓칠 수 없지" : "판결합니다!"}
+            </div>
+            <img src="/ai-judge-character.png" alt="" />
+            <div className="ai-scan-line" />
             <div className="ai-spark spark-one">✦</div>
             <div className="ai-spark spark-two">✧</div>
           </div>
@@ -342,7 +343,7 @@ export default function CourtPage() {
           <div className="judging-progress" aria-hidden="true">
             {judgingMessages.map((message, index) => <i key={message} className={index <= judgingStep ? "active" : ""} />)}
           </div>
-          <p>잠시만요. 귀여운 재판부가 사건의 균형을 맞추고 있어요.</p>
+          <p>잠시만요. 편들어 판사가 사건의 균형을 맞추고 있어요.</p>
           <small>현재는 프론트엔드 판결 규칙을 활용한 AI 콘셉트 연출입니다.</small>
         </section>
       )}
