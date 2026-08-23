@@ -13,6 +13,7 @@ type SavedVerdict = {
   order: string;
   mood: Exclude<Filter, "전체">;
   score: number;
+  outcome?: "승소" | "일부 승소" | "쌍방 과실" | "패소" | "증거 불충분";
   date: string;
 };
 
@@ -77,6 +78,12 @@ export default function ArchivePage() {
   const averageScore = records.length
     ? Math.round(records.reduce((sum, record) => sum + record.score, 0) / records.length)
     : 0;
+  const outcomeCount = records.reduce<Record<string, number>>((counts, record) => {
+    const outcome = record.outcome || "승소";
+    counts[outcome] = (counts[outcome] || 0) + 1;
+    return counts;
+  }, {});
+  const mostCommonOutcome = Object.entries(outcomeCount).sort((a, b) => b[1] - a[1])[0]?.[0] || "기록 없음";
 
   function removeRecord(id: string) {
     const next = records.filter((record) => record.id !== id);
@@ -133,7 +140,7 @@ export default function ArchivePage() {
       <section className="archive-stats" aria-label="판결 통계">
         <div><span>보관된 판결</span><strong>{ready ? records.length : "—"}<small>건</small></strong></div>
         <div><span>평균 억울함 인정</span><strong>{ready ? averageScore : "—"}<small>%</small></strong></div>
-        <div><span>가장 많이 받은 판결</span><strong className="stat-copy">당신 승소</strong></div>
+        <div><span>가장 많이 받은 판결</span><strong className="stat-copy">{ready ? mostCommonOutcome : "—"}</strong></div>
       </section>
 
       <section className="archive-content">
@@ -152,7 +159,7 @@ export default function ArchivePage() {
           ) : filtered.map((record) => (
             <article className={expanded === record.id ? "archive-card expanded" : "archive-card"} key={record.id}>
               <button className="archive-card-main" type="button" onClick={() => setExpanded(expanded === record.id ? null : record.id)} aria-expanded={expanded === record.id}>
-                <span className={`mood-dot mood-${record.mood}`}>{record.mood}</span>
+                <span className={`mood-dot mood-${record.mood}`}>{record.outcome || record.mood}</span>
                 <div><small>사건번호 {record.caseNumber}</small><h3>{record.title}</h3><p>“{record.story}”</p></div>
                 <time dateTime={record.date}>{new Intl.DateTimeFormat("ko-KR", { month: "long", day: "numeric" }).format(new Date(record.date))}</time>
                 <b aria-hidden="true">⌄</b>
