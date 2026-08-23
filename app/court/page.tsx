@@ -35,10 +35,10 @@ type SavedVerdict = {
 
 const moods: Mood[] = ["다정하게", "단호하게", "웃기게"];
 const judgingMessages = [
-  "사건에서 웃음 포인트 압수수색 중",
-  "양심과 눈치의 알리바이를 대조하는 중",
-  "판결문에 드립을 합법적으로 첨가 중",
-  "판결봉 대신 웃음 버튼을 두드리는 중",
+  "무슨 일이었는지 찬찬히 읽는 중",
+  "누가 얼마나 잘못했는지 저울질하는 중",
+  "화난 마음에 웃음 한 스푼을 섞는 중",
+  "속 시원한 판결문을 마무리하는 중",
 ];
 
 const samples = [
@@ -308,10 +308,10 @@ export default function CourtPage() {
       </header>
 
       <section className="hero" id="top">
-        <div className="eyebrow"><span>⚖</span> 법적 효력 0% · 과몰입 100%</div>
+        <div className="eyebrow"><span>⚖</span> 법적 효력 0% · 마음 이해 100%</div>
         <h1>그건 좀<br /><em>억울했겠다.</em></h1>
         <p className="hero-copy">
-          진지한 고민은 잠시 내려놓고,<br />오늘의 사소한 억울함을 예능 판결로 날려버려요.
+          진짜 화났던 일을 그대로 털어놓으세요.<br />상황은 진지하게 살피고, 판결은 조금 웃기게 내려드려요.
         </p>
 
         <form className="case-form" onSubmit={deliverVerdict}>
@@ -342,7 +342,7 @@ export default function CourtPage() {
           </div>
 
           <fieldset>
-            <legend>오늘의 예능 재판부</legend>
+            <legend>오늘의 판결 분위기</legend>
             <div className="mood-picker">
               {moods.map((item) => (
                 <label key={item} className={mood === item ? "selected" : ""}>
@@ -356,59 +356,59 @@ export default function CourtPage() {
                       setResult(null);
                     }}
                   />
-                  <span>{item === "다정하게" ? "말랑한 편들기" : item === "단호하게" ? "웃픈 현실 체크" : "드립 과다 투여"}</span>
-                  <strong>{item === "다정하게" ? "포근 판사" : item === "단호하게" ? "팩폭 판사" : "예능 판사"}</strong>
+                  <span>{item === "다정하게" ? "마음부터 토닥토닥" : item === "단호하게" ? "잘못은 확실하게" : "끝에는 피식하게"}</span>
+                  <strong>{item === "다정하게" ? "포근 판사" : item === "단호하게" ? "팩폭 판사" : "유쾌 판사"}</strong>
                 </label>
               ))}
             </div>
           </fieldset>
 
           <button className="primary-button" disabled={!canSubmit || isJudging} type="submit">
-            <span>{isJudging ? "예능 재판부 과몰입 중..." : "웃긴 판결 받아보기"}</span><b>→</b>
+            <span>{isJudging ? "편들어 판사가 심리 중..." : "내 억울함 판결받기"}</span><b>→</b>
           </button>
-          <p className="entertainment-notice"><b>재미 전용</b> 실제 분쟁 해결이나 법률 판단 대신, 친구들과 웃고 공유할 가벼운 사건만 접수해 주세요.</p>
+          <p className="entertainment-notice"><b>마음은 진지하게, 결과는 유쾌하게</b> 법률 판단이 아닌 감정 환기와 위로를 위한 판결입니다.</p>
           {!canSubmit && story.length > 0 && <p className="form-hint">조금만 더 자세히 들려주세요.</p>}
         </form>
       </section>
 
       <section className="promise">
-        <p>예능 재판부의 철칙</p>
+        <p>내 편 판결소의 철칙</p>
         <div>
           <span>하나.</span>
-          <strong>사건은 사소해도<br />과몰입은 진심입니다.</strong>
+          <strong>당신이 화난 이유를<br />가볍게 넘기지 않습니다.</strong>
         </div>
         <div>
           <span>둘.</span>
-          <strong>정답을 주기보다<br />웃고 공유할 판결을 만듭니다.</strong>
+          <strong>잘잘못은 분명하게,<br />표현은 웃을 수 있게 전합니다.</strong>
         </div>
-        <small>오직 재미와 위로를 위한 콘텐츠예요. 실제 법률·의료·안전 문제의 판단에는 사용할 수 없습니다.</small>
+        <small>판결은 재미용이지만 화난 마음은 진심으로 듣습니다. 실제 법률·의료·안전 문제의 판단에는 사용할 수 없습니다.</small>
       </section>
 
       {isJudging && (
         <section className="ai-judging" id="ai-judging" aria-live="polite" aria-busy="true">
           <div className={`ai-character ai-character-step-${judgingStep}`} aria-hidden="true">
             <div className="ai-speech">
-              {judgingStep === 0 ? "오늘도 큰 사건이군…" : judgingStep === 1 ? "눈치의 알리바이 확인!" : judgingStep === 2 ? "드립 한 스푼? 두 스푼!" : "탕! 웃음형 선고!"}
+              {judgingStep === 0 ? "많이 화났겠군…" : judgingStep === 1 ? "잘잘못 확인 중!" : judgingStep === 2 ? "조금은 웃게 해줄게" : "탕! 판결합니다!"}
             </div>
             <img src="/ai-judge-character.png" alt="" />
             <div className="ai-scan-line" />
             <div className="ai-spark spark-one">✦</div>
             <div className="ai-spark spark-two">✧</div>
           </div>
-          <span className="ai-label">COMEDY COURT IN SESSION</span>
+          <span className="ai-label">MY SIDE COURT IN SESSION</span>
           <h2>{judgingMessages[judgingStep]}<i className="thinking-dots">...</i></h2>
           <div className="judging-progress" aria-hidden="true">
             {judgingMessages.map((message, index) => <i key={message} className={index <= judgingStep ? "active" : ""} />)}
           </div>
-          <p>잠시만요. 편들어 판사가 사건을 예능으로 재구성하고 있어요.</p>
-          <small>결과는 오락용 자동 생성 콘텐츠이며 실제 사실 판단이나 조언이 아닙니다.</small>
+          <p>잠시만요. 편들어 판사가 상황과 책임을 함께 살피고 있어요.</p>
+          <small>결과는 감정 환기와 재미를 위한 콘텐츠이며 실제 법률 판단이나 조언이 아닙니다.</small>
         </section>
       )}
 
       {result && (
         <section className="result-section" id="verdict" aria-live="polite">
           <div className="result-heading">
-            <span>법적 효력 0% · 공유 재미 100%</span>
+            <span>법적 효력 0% · 화난 마음 이해 100%</span>
             <h2>주문</h2>
           </div>
 
@@ -435,7 +435,7 @@ export default function CourtPage() {
             </div>
 
             <div className="judge-aside">
-              <span>판사의 사족</span>
+              <span>판사의 한마디</span>
               <p>“{result.judgeComment}”</p>
             </div>
 
@@ -446,8 +446,8 @@ export default function CourtPage() {
 
             <div className="verdict-stats">
               <div><span>원고 주장 인정</span><strong>{result.score}%</strong></div>
-              <div><span>예능 위자료</span><strong>{result.compensation}</strong></div>
-              <div><span>오늘의 부가형</span><strong>{result.entertainmentLabel}</strong></div>
+              <div><span>마음 위자료</span><strong>{result.compensation}</strong></div>
+              <div><span>오늘의 웃음 처방</span><strong>{result.entertainmentLabel}</strong></div>
             </div>
 
             <div className="judge-sign">
@@ -461,7 +461,7 @@ export default function CourtPage() {
               {shared ? "판결문이 복사됐어요 ✓" : "판결 공유하기"}
             </button>
             <button className="appeal-button" type="button" onClick={() => deliverVerdict()}>
-              다른 드립으로 재심 요청
+              판결이 아쉬워요 · 재심 요청
             </button>
             <button className="new-case-button" type="button" onClick={resetCourt}>
               새로운 사건 접수하기
@@ -472,8 +472,8 @@ export default function CourtPage() {
 
       <footer>
         <span className="footer-mark">내편</span>
-        <p>해결은 못 해도, 웃음은 판결해 드릴게요.</p>
-        <small>본 서비스는 재미 전용입니다. 모든 판결의 법적 효력은 정확히 0%입니다.</small>
+        <p>화난 마음은 제대로 듣고, 마지막엔 조금 웃게 해드릴게요.</p>
+        <small>본 서비스의 판결은 감정 환기와 재미를 위한 것으로 법적 효력은 없습니다.</small>
       </footer>
     </main>
   );
