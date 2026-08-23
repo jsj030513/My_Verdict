@@ -32,6 +32,12 @@ type SavedVerdict = {
 const archiveKey = "my-verdict-archive";
 
 const moods: Mood[] = ["다정하게", "단호하게", "웃기게"];
+const judgingMessages = [
+  "사건 진술을 꼼꼼히 읽는 중",
+  "원고와 피고의 책임을 비교하는 중",
+  "판결문에 유머 한 스푼 추가 중",
+  "판결봉을 두드리는 중",
+];
 
 const samples = [
   "친구가 내 디저트를 한입만 먹는다더니 반을 먹었어요.",
@@ -156,6 +162,8 @@ export default function CourtPage() {
   const [result, setResult] = useState<Verdict | null>(null);
   const [caseNumber, setCaseNumber] = useState("");
   const [shared, setShared] = useState(false);
+  const [isJudging, setIsJudging] = useState(false);
+  const [judgingStep, setJudgingStep] = useState(0);
 
   const charsLeft = 180 - story.length;
   const canSubmit = story.trim().length >= 8;
@@ -165,9 +173,22 @@ export default function CourtPage() {
     return `${story.slice(0, 88)}…`;
   }, [story]);
 
-  function deliverVerdict(event?: FormEvent) {
+  async function deliverVerdict(event?: FormEvent) {
     event?.preventDefault();
-    if (!canSubmit) return;
+    if (!canSubmit || isJudging) return;
+    setIsJudging(true);
+    setResult(null);
+    setJudgingStep(0);
+    window.setTimeout(() => {
+      document.getElementById("ai-judging")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 60);
+
+    for (let step = 1; step < judgingMessages.length; step += 1) {
+      await new Promise((resolve) => window.setTimeout(resolve, 620));
+      setJudgingStep(step);
+    }
+    await new Promise((resolve) => window.setTimeout(resolve, 520));
+
     const nextResult = buildVerdict(story.trim(), mood);
     const nextCaseNumber = makeCaseNumber();
     setResult(nextResult);
@@ -190,6 +211,7 @@ export default function CourtPage() {
     } catch {
       // 저장 공간을 사용할 수 없어도 판결 자체는 계속 진행합니다.
     }
+    setIsJudging(false);
     window.setTimeout(() => {
       document.getElementById("verdict")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 40);
@@ -286,8 +308,8 @@ export default function CourtPage() {
             </div>
           </fieldset>
 
-          <button className="primary-button" disabled={!canSubmit} type="submit">
-            <span>판결 받아보기</span><b>→</b>
+          <button className="primary-button" disabled={!canSubmit || isJudging} type="submit">
+            <span>{isJudging ? "AI 재판부 심리 중..." : "판결 받아보기"}</span><b>→</b>
           </button>
           {!canSubmit && story.length > 0 && <p className="form-hint">조금만 더 자세히 들려주세요.</p>}
         </form>
@@ -305,6 +327,26 @@ export default function CourtPage() {
         </div>
         <small>판결 결과는 이 기기의 판결 보관소에만 저장돼요.</small>
       </section>
+
+      {isJudging && (
+        <section className="ai-judging" id="ai-judging" aria-live="polite" aria-busy="true">
+          <div className="ai-courtroom" aria-hidden="true">
+            <div className="ai-antenna"><i /></div>
+            <div className="ai-judge-face"><i /><i /><b>⌣</b></div>
+            <div className="ai-judge-collar"><i /><i /></div>
+            <div className="ai-gavel"><b>▰</b><span /></div>
+            <div className="ai-spark spark-one">✦</div>
+            <div className="ai-spark spark-two">✧</div>
+          </div>
+          <span className="ai-label">AI COURT IN SESSION</span>
+          <h2>{judgingMessages[judgingStep]}<i className="thinking-dots">...</i></h2>
+          <div className="judging-progress" aria-hidden="true">
+            {judgingMessages.map((message, index) => <i key={message} className={index <= judgingStep ? "active" : ""} />)}
+          </div>
+          <p>잠시만요. 귀여운 재판부가 사건의 균형을 맞추고 있어요.</p>
+          <small>현재는 프론트엔드 판결 규칙을 활용한 AI 콘셉트 연출입니다.</small>
+        </section>
+      )}
 
       {result && (
         <section className="result-section" id="verdict" aria-live="polite">

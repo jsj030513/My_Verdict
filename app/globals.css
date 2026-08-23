@@ -42,8 +42,17 @@ main {
   background: #6e1118;
   transition: opacity 420ms ease, transform 420ms ease;
 }
+.splash-page::before {
+  content: "";
+  position: absolute;
+  inset: -24px;
+  background: url("/court-splash-v2.png") center / cover no-repeat;
+  filter: blur(18px) saturate(.8);
+  opacity: .32;
+  transform: scale(1.06);
+}
 .splash-page.leaving { opacity: 0; transform: scale(1.015); }
-.splash-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.splash-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center; }
 .splash-enter {
   position: absolute;
   left: clamp(30px, 7vw, 110px);
@@ -601,6 +610,44 @@ fieldset { margin: 0 0 25px; padding: 0; border: 0; }
 .promise > div strong { font-family: Georgia, "Batang", serif; font-size: clamp(23px, 4vw, 34px); font-weight: 400; line-height: 1.35; letter-spacing: -0.04em; }
 .promise small { display: block; margin-top: 30px; color: rgba(255,255,255,.56); font-size: 11px; }
 
+/* AI judging interlude */
+.ai-judging {
+  width: min(720px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 92px 20px 100px;
+  text-align: center;
+  scroll-margin-top: 40px;
+}
+.ai-courtroom { position: relative; width: 150px; height: 150px; margin: 0 auto 28px; border: 1px solid rgba(125,38,43,.2); border-radius: 50%; background: rgba(255,255,255,.42); box-shadow: 0 18px 50px rgba(78,46,30,.1); }
+.ai-antenna { position: absolute; top: 17px; left: 50%; width: 2px; height: 18px; background: var(--wine); transform: translateX(-50%); }
+.ai-antenna i { position: absolute; top: -7px; left: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--gold); animation: ai-pulse 900ms ease-in-out infinite; }
+.ai-judge-face { position: absolute; top: 36px; left: 38px; width: 74px; height: 61px; border: 3px solid var(--wine); border-radius: 18px; background: #fffaf0; }
+.ai-judge-face > i { position: absolute; top: 21px; width: 7px; height: 7px; border-radius: 50%; background: var(--wine); animation: ai-blink 2.1s infinite; }
+.ai-judge-face > i:first-child { left: 18px; }
+.ai-judge-face > i:nth-child(2) { right: 18px; }
+.ai-judge-face > b { position: absolute; left: 50%; bottom: 7px; color: var(--wine); font-size: 18px; transform: translateX(-50%); }
+.ai-judge-collar { position: absolute; top: 101px; left: 50%; display: flex; gap: 3px; transform: translateX(-50%); }
+.ai-judge-collar i { width: 25px; height: 18px; background: var(--wine); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.ai-gavel { position: absolute; right: 2px; bottom: 14px; width: 48px; height: 45px; transform-origin: 70% 85%; animation: ai-gavel 820ms cubic-bezier(.4,0,.2,1) infinite; }
+.ai-gavel b { position: absolute; top: 3px; left: 0; color: var(--gold); font-size: 28px; transform: rotate(-28deg); }
+.ai-gavel span { position: absolute; top: 20px; left: 24px; width: 28px; height: 5px; border-radius: 4px; background: var(--gold); transform: rotate(48deg); }
+.ai-spark { position: absolute; color: var(--gold); animation: ai-spark 1.2s ease-in-out infinite; }
+.spark-one { top: 25px; right: 19px; }
+.spark-two { bottom: 31px; left: 18px; animation-delay: 480ms; }
+.ai-label { color: var(--wine); font-size: 10px; font-weight: 900; letter-spacing: .18em; }
+.ai-judging h2 { margin: 13px 0 15px; font-family: Georgia, "Batang", serif; font-size: clamp(25px, 4.5vw, 38px); font-weight: 500; letter-spacing: -.04em; }
+.thinking-dots { display: inline-block; width: 22px; overflow: hidden; color: var(--wine); font-style: normal; text-align: left; vertical-align: bottom; animation: ai-dots 1.1s steps(4,end) infinite; }
+.judging-progress { display: flex; justify-content: center; gap: 7px; margin: 22px 0 18px; }
+.judging-progress i { width: 28px; height: 3px; border-radius: 3px; background: rgba(39,37,33,.12); transition: background 250ms, transform 250ms; }
+.judging-progress i.active { background: var(--wine); transform: scaleY(1.5); }
+.ai-judging p { margin: 0; color: var(--muted); font-size: 12px; }
+.ai-judging small { display: block; margin-top: 10px; color: #aaa49a; font-size: 9px; }
+@keyframes ai-pulse { 50% { transform: scale(1.35); box-shadow: 0 0 0 6px rgba(183,135,63,.12); } }
+@keyframes ai-blink { 0%, 45%, 52%, 100% { transform: scaleY(1); } 48% { transform: scaleY(.08); } }
+@keyframes ai-gavel { 0%, 45%, 100% { transform: rotate(-12deg); } 65% { transform: rotate(16deg); } }
+@keyframes ai-spark { 50% { opacity: .3; transform: scale(.7) rotate(18deg); } }
+@keyframes ai-dots { from { width: 0; } to { width: 22px; } }
+
 .result-section {
   width: min(760px, calc(100% - 40px));
   margin: 0 auto;
@@ -676,7 +723,7 @@ footer p { margin: 0 0 12px; font-family: Georgia, "Batang", serif; font-size: 1
 footer small { color: rgba(255,255,255,.43); font-size: 10px; }
 
 @media (max-width: 640px) {
-  .splash-image { object-position: 61% center; }
+  .splash-image { object-position: center; }
   .splash-enter { left: 50%; bottom: 30px; width: calc(100% - 42px); transform: translateX(-50%); background: rgba(249,241,221,.9); }
   .topbar { width: calc(100% - 28px); height: 70px; }
   .brand { font-size: 17px; }
@@ -692,6 +739,7 @@ footer small { color: rgba(255,255,255,.43); font-size: 10px; }
   .promise { padding-top: 58px; padding-bottom: 58px; }
   .promise > div { grid-template-columns: 52px 1fr; }
   .result-section { width: calc(100% - 24px); padding: 76px 0; }
+  .ai-judging { width: calc(100% - 24px); padding: 72px 10px 78px; }
   .verdict-card { padding: 29px 22px 28px; }
   .stamp { right: 21px; top: 72px; width: 72px; height: 72px; font-size: 16px; }
   .case-summary { width: 68%; margin-top: 30px; font-size: 12px; }
@@ -732,4 +780,5 @@ footer small { color: rgba(255,255,255,.43); font-size: 10px; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition: none !important; }
   .splash-progress i { animation: none; }
+  .ai-antenna i, .ai-judge-face > i, .ai-gavel, .ai-spark, .thinking-dots { animation: none; }
 }

@@ -22,7 +22,7 @@ export default function Home() {
     <main className={leaving ? "splash-page leaving" : "splash-page"}>
       <img
         className="splash-image"
-        src="/court-splash.png"
+        src="/court-splash-v2.png"
         alt="내 편 판결소 — 그건 좀 억울했겠다"
       />
       <button className="splash-enter" type="button" onClick={enter} aria-label="로그인 화면으로 이동">
