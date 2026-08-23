@@ -138,17 +138,35 @@ const conscienceByOutcome: Record<Outcome, string[]> = {
   "증거 불충분": ["판독 보류", "신호 약함", "추가 접수"],
 };
 
-const selfSignals = [
-  { pattern: /(제가|내가).*(늦|깜빡|잊|취소|거짓말|화냈|화를 냈|먹었|잘못)/, label: "원고의 선행 실수" },
-  { pattern: /(제가|내가).*(먼저|일방적|약속을 어|연락을 안)/, label: "원고의 책임 진술" },
-  { pattern: /(제 잘못|내 잘못|제가 잘못|내가 잘못)/, label: "잘못 인정" },
-  { pattern: /(미안|사과해야|괜히|과했|심했|참지 못|욱해서)/, label: "원고의 양심 자진 출석" },
+type VerdictSignal = { pattern: RegExp; label: string; weight: number };
+
+const selfSignals: VerdictSignal[] = [
+  { pattern: /(제가|내가|나는|저는).{0,40}(먼저|늦|지각|깜빡|잊|취소|거짓말|화냈|화를 냈|욕했|소리쳤|무시했|연락을 안|약속을 어|먹었)/, label: "원고의 선행 실수", weight: 3 },
+  { pattern: /(제 잘못|내 잘못|제가 잘못|내가 잘못|제가 실수|내가 실수)/, label: "원고의 잘못 인정", weight: 4 },
+  { pattern: /(나도|저도|저 역시|나 역시).{0,30}(화내|욕|무시|안 했|못 했|늦|실수|잘못)/, label: "원고의 맞대응", weight: 2 },
+  { pattern: /(미안하|사과해야|괜히 그랬|내가 과했|제가 과했|내가 심했|제가 심했|욱해서)/, label: "원고의 양심 자진 출석", weight: 3 },
 ];
-const otherSignals = [
-  { pattern: /(친구|애인|남친|여친|팀장|상사|동료|남편|아내|상대).*(무시|늦|먹|욕|막말|거짓말|취소|잠수|안 보|일을 주|소리)/, label: "상대의 문제 행동" },
-  { pattern: /(반복|맨날|항상|또 |매번)/, label: "반복된 행동" },
-  { pattern: /(약속을 어|연락 안|답장 안|말도 없이|허락 없이|반을 먹|퇴근.*일)/, label: "약속·배려 위반" },
-  { pattern: /(읽씹|안읽씹|지각|새치기|뺏|훔|놀렸|비꼬|무례|떠넘|강요|차별)/, label: "눈치·배려 실종" },
+
+const otherSignals: VerdictSignal[] = [
+  { pattern: /(친구|애인|남친|여친|팀장|상사|동료|남편|아내|상대|상대방|걔|그 사람|가족|엄마|아빠|형|누나|동생|룸메|선생님|고객|손님).{0,45}(무시|늦|지각|먹|욕|막말|거짓말|취소|잠수|잊|안 보|안 해|안 갚|않|못|일을 주|소리|뺏|놀렸|비꼬|떠넘|강요|함부로|가져|사용|건드|망가|비웃|차단)/, label: "상대의 문제 행동", weight: 3 },
+  { pattern: /(당했|빼앗|훔쳐|폭언|욕설|막말|차별|강요|괴롭|협박|새치기)/, label: "명확한 피해 행동", weight: 4 },
+  { pattern: /(약속을 어|연락을? 안|답장을? 안|읽씹|안읽씹|말도 없이|허락 없이|반을 먹|퇴근.{0,12}일|일을 떠넘)/, label: "약속·배려 위반", weight: 3 },
+  { pattern: /(빌린 돈|돈을 빌려|내 돈).{0,25}(안 갚|못 받|떼먹)|안 (갚|지켰|도와|치웠|보냈|줬)/, label: "책임 회피 정황", weight: 3 },
+  { pattern: /(반복|맨날|항상|또 |또다시|매번|한두 번이 아니)/, label: "반복된 행동", weight: 2 },
+  { pattern: /(내 탓|제 탓|나한테|저한테).{0,30}(했|말했|화냈|소리|떠넘|강요|무시)/, label: "상대 책임 정황", weight: 2 },
+];
+
+const mutualSignals: VerdictSignal[] = [
+  { pattern: /(서로|둘 다|둘이).{0,30}(화내|싸우|잘못|무시|욕|소리|말다툼)/, label: "쌍방의 감정적 대응", weight: 3 },
+  { pattern: /(말다툼|싸웠|싸우다가|맞받아|똑같이 되갚)/, label: "상호 충돌 정황", weight: 2 },
+];
+
+const detailSignals: VerdictSignal[] = [
+  { pattern: /(화나|속상|서운|억울|짜증|기분 나|상처|실망|황당)/, label: "감정 피해 진술", weight: 1 },
+  { pattern: /(어제|오늘|방금|아까|지난|퇴근|출근|기념일|약속 시간|\d+\s*(분|시간|번|일|주|개월|년))/, label: "구체적인 시점·횟수", weight: 1 },
+  { pattern: /(그런데|하지만|했는데|하더니|때문에|결국|그래서)/, label: "사건 경위 진술", weight: 1 },
+  { pattern: /([“\"'].*[”\"']|라고 했|라고 말)/, label: "구체적인 대화 내용", weight: 1 },
+  { pattern: /(했|당했|말했|보냈|줬|먹었|늦었|잊었|취소했|무시했|안 했|못 했|싸웠|소리쳤|가져갔|사용했|망가뜨)/, label: "행동 사실 진술", weight: 1 },
 ];
 
 function pick<T>(items: T[]) { return items[Math.floor(Math.random() * items.length)]; }
@@ -156,18 +174,30 @@ function pick<T>(items: T[]) { return items[Math.floor(Math.random() * items.len
 function buildVerdict(story: string, mood: Mood): Verdict {
   const selfEvidence = selfSignals.filter((signal) => signal.pattern.test(story));
   const otherEvidence = otherSignals.filter((signal) => signal.pattern.test(story));
+  const mutualEvidence = mutualSignals.filter((signal) => signal.pattern.test(story));
+  const detailEvidence = detailSignals.filter((signal) => signal.pattern.test(story));
+  const selfScore = selfEvidence.reduce((sum, signal) => sum + signal.weight, 0);
+  const otherScore = otherEvidence.reduce((sum, signal) => sum + signal.weight, 0);
+  const mutualScore = mutualEvidence.reduce((sum, signal) => sum + signal.weight, 0);
+  const detailScore = detailEvidence.reduce((sum, signal) => sum + signal.weight, 0);
+  const hasEventDetail = detailEvidence.some((signal) => signal.label === "행동 사실 진술" || signal.label === "구체적인 대화 내용");
   let outcome: Outcome;
-  if (selfEvidence.length >= 1 && otherEvidence.length === 0) outcome = "패소";
-  else if (selfEvidence.length >= 1 && otherEvidence.length >= 1) outcome = "쌍방 과실";
-  else if (otherEvidence.length >= 2) outcome = "승소";
-  else if (otherEvidence.length === 1) outcome = "일부 승소";
+  if (mutualScore >= 2) outcome = "쌍방 과실";
+  else if (selfScore > 0 && otherScore > 0) {
+    if (otherScore - selfScore >= 3) outcome = "일부 승소";
+    else if (selfScore - otherScore >= 2) outcome = "패소";
+    else outcome = "쌍방 과실";
+  } else if (selfScore >= 2) outcome = "패소";
+  else if (otherScore >= 4) outcome = "승소";
+  else if (otherScore >= 2) outcome = "일부 승소";
+  else if ((detailScore >= 2 && hasEventDetail) || (story.trim().length >= 28 && hasEventDetail)) outcome = "일부 승소";
   else outcome = "증거 불충분";
 
   const ranges: Record<Outcome, [number, number]> = {
     승소: [88, 99], "일부 승소": [65, 82], "쌍방 과실": [48, 58], 패소: [18, 39], "증거 불충분": [40, 55],
   };
   const [min, max] = ranges[outcome];
-  const evidence = [...selfEvidence, ...otherEvidence].map((item) => item.label);
+  const evidence = [...new Set([...selfEvidence, ...otherEvidence, ...mutualEvidence, ...detailEvidence].map((item) => item.label))].slice(0, 4);
   if (!evidence.length) evidence.push("구체적 행동 단서 부족");
   const genre = genreRules.find((rule) => rule.pattern.test(story))?.genre || "미스터리";
 
