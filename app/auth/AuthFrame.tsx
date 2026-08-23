@@ -85,19 +85,24 @@ export function LoginView() {
     setLoading(true);
     setError("");
     const form = new FormData(event.currentTarget);
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: form.get("username"), password: form.get("password") }),
-    });
-    const data = await response.json() as { error?: string };
-    setLoading(false);
-    if (!response.ok) {
-      setError(data.error || "로그인하지 못했습니다.");
-      return;
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: form.get("username"), password: form.get("password") }),
+      });
+      const data = await response.json().catch(() => ({})) as { error?: string };
+      if (!response.ok) {
+        setError(data.error || "서버에서 로그인 요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+        return;
+      }
+      setNotice("확인되었습니다. 판결소로 입장합니다.");
+      window.setTimeout(() => router.push("/court"), 350);
+    } catch {
+      setError("네트워크 연결을 확인한 뒤 다시 시도해 주세요.");
+    } finally {
+      setLoading(false);
     }
-    setNotice("확인되었습니다. 판결소로 입장합니다.");
-    window.setTimeout(() => router.push("/court"), 350);
   }
 
   return (
@@ -145,23 +150,28 @@ export function SignupView() {
     }
     setError("");
     setLoading(true);
-    const response = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: form.get("name"),
-        username: form.get("new-username"),
-        email: form.get("email"),
-        password: form.get("new-password"),
-      }),
-    });
-    const data = await response.json() as { error?: string };
-    setLoading(false);
-    if (!response.ok) {
-      setError(data.error || "회원가입을 완료하지 못했습니다.");
-      return;
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.get("name"),
+          username: form.get("new-username"),
+          email: form.get("email"),
+          password: form.get("new-password"),
+        }),
+      });
+      const data = await response.json().catch(() => ({})) as { error?: string };
+      if (!response.ok) {
+        setError(data.error || "서버에서 계정을 생성하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+        return;
+      }
+      setComplete(true);
+    } catch {
+      setError("네트워크 연결을 확인한 뒤 다시 시도해 주세요.");
+    } finally {
+      setLoading(false);
     }
-    setComplete(true);
   }
 
   return (
