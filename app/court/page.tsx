@@ -165,7 +165,6 @@ export default function CourtPage() {
   const [isJudging, setIsJudging] = useState(false);
   const [judgingStep, setJudgingStep] = useState(0);
 
-  const charsLeft = 180 - story.length;
   const canSubmit = story.trim().length >= 8;
 
   const shortStory = useMemo(() => {
@@ -265,13 +264,13 @@ export default function CourtPage() {
             <textarea
               id="story"
               value={story}
-              onChange={(event) => setStory(event.target.value.slice(0, 180))}
-              placeholder="예: 팀장님이 퇴근 5분 전에 일을 주셨어요..."
-              rows={5}
+              onChange={(event) => setStory(event.target.value)}
+              placeholder="예: 팀장님이 퇴근 5분 전에 일을 주셨어요... 길어도 괜찮으니 편하게 들려주세요."
+              rows={7}
               aria-describedby="story-help"
             />
-            <span id="story-help" className={charsLeft < 20 ? "count warning" : "count"}>
-              {story.length}/180
+            <span id="story-help" className="count">
+              {story.length.toLocaleString()}자 · 제한 없음
             </span>
           </div>
 

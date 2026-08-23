@@ -516,7 +516,6 @@ textarea:focus {
   font-size: 11px;
 }
 
-.count.warning { color: var(--wine); }
 
 .sample-row {
   margin: 14px 0 28px;
