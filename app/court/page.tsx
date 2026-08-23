@@ -16,6 +16,9 @@ type Verdict = {
   conscience: string;
   outcome: Outcome;
   evidence: string[];
+  genre: string;
+  judgeComment: string;
+  entertainmentLabel: string;
 };
 
 type SavedVerdict = {
@@ -32,10 +35,10 @@ type SavedVerdict = {
 
 const moods: Mood[] = ["다정하게", "단호하게", "웃기게"];
 const judgingMessages = [
-  "사건 진술을 꼼꼼히 읽는 중",
-  "원고와 피고의 책임을 비교하는 중",
-  "판결문에 유머 한 스푼 추가 중",
-  "판결봉을 두드리는 중",
+  "사건에서 웃음 포인트 압수수색 중",
+  "양심과 눈치의 알리바이를 대조하는 중",
+  "판결문에 드립을 합법적으로 첨가 중",
+  "판결봉 대신 웃음 버튼을 두드리는 중",
 ];
 
 const samples = [
@@ -46,34 +49,34 @@ const samples = [
 
 const titles: Record<Mood, Record<Outcome, string[]>> = {
   다정하게: {
-    승소: ["당신의 서운함은 충분히 타당합니다", "마음의 손을 들어드립니다", "참아온 마음에 승소를 선고합니다"],
+    승소: ["당신의 서운함은 충분히 타당합니다", "마음의 손을 들어드립니다", "참아온 마음에 승소를 선고합니다", "오늘만큼은 삐져도 무죄입니다", "당신의 마음에 따뜻한 승소 도장을 찍습니다"],
     "일부 승소": ["서운함은 인정, 오해는 조금 덜어냅니다", "당신 마음의 절반 이상은 옳았습니다", "섭섭할 이유가 충분했습니다"],
     "쌍방 과실": ["두 마음 모두 잠깐 길을 잃었습니다", "서로에게 한 걸음씩 필요합니다", "이번 사건은 함께 풀어야 합니다"],
-    패소: ["이번만큼은 상대의 마음도 살펴봅니다", "서운함과 잘못은 별개의 문제입니다", "따뜻하지만 솔직한 패소입니다"],
+    패소: ["이번만큼은 상대의 마음도 살펴봅니다", "서운함과 잘못은 별개의 문제입니다", "따뜻하지만 솔직한 패소입니다", "마음은 이해하지만 판결봉은 반대편입니다", "괜찮아요, 오늘의 머쓱함도 추억이 됩니다"],
     "증거 불충분": ["마음은 들었지만 사실이 조금 더 필요합니다", "아직 판결봉을 내려놓겠습니다", "서둘러 단정하지 않기로 합니다"],
   },
   단호하게: {
-    승소: ["선 넘음이 명백합니다", "참을 만큼 참았습니다", "피고의 책임이 분명합니다"],
+    승소: ["선 넘음이 명백합니다", "참을 만큼 참았습니다", "피고의 책임이 분명합니다", "이건 눈치 결석으로 유죄입니다", "변명의 문은 지금 닫혔습니다"],
     "일부 승소": ["억울함은 인정하되 전부는 아닙니다", "피고에게 더 큰 책임이 있습니다", "원고의 주장을 일부 받아들입니다"],
     "쌍방 과실": ["양측 모두 반성문을 제출하십시오", "누구도 완전히 자유롭지 않습니다", "서로 한 번씩 선을 넘었습니다"],
-    패소: ["이번 사건은 원고 패소입니다", "솔직히 이번에는 당신 잘못입니다", "편은 들지만 판결은 냉정합니다"],
+    패소: ["이번 사건은 원고 패소입니다", "솔직히 이번에는 당신 잘못입니다", "편은 들지만 판결은 냉정합니다", "원고의 양심에게 출석을 명합니다", "오늘의 빌런, 설마 당신이었습니다"],
     "증거 불충분": ["주장만으로는 판결할 수 없습니다", "정황은 있으나 결정타가 없습니다", "추가 진술을 명합니다"],
   },
   웃기게: {
-    승소: ["유죄. 꽤나 유죄.", "피고의 양심에 로그인이 필요합니다", "원고 승. 이의 제기는 간식으로만 받습니다"],
-    "일부 승소": ["반쯤 유죄, 간식은 온전히 배상", "원고 우세 판정승입니다", "억울함 7, 오해 3으로 판결합니다"],
-    "쌍방 과실": ["둘 다 유죄, 둘 다 귀여운 벌금형", "쌍방의 눈치가 비행기 모드였습니다", "이번 싸움의 승자는 배달앱뿐입니다"],
-    패소: ["원고의 양심도 출석해 주세요", "반전입니다. 이번 피고는 당신입니다", "편들기 실패. 증거가 너무 솔직했습니다"],
-    "증거 불충분": ["재판부도 눈치만 보는 중입니다", "사건이 너무 짧아 판결봉이 멈췄습니다", "목격자 한 명 또는 카톡 세 줄을 요청합니다"],
+    승소: ["유죄. 꽤나 유죄.", "피고의 양심에 로그인이 필요합니다", "원고 승. 이의 제기는 간식으로만 받습니다", "피고의 눈치가 로그아웃했습니다", "이 정도면 서운함도 정규직입니다", "피고 측 변명 서버가 폭발했습니다"],
+    "일부 승소": ["반쯤 유죄, 간식은 온전히 배상", "원고 우세 판정승입니다", "억울함 7, 오해 3으로 판결합니다", "승소는 미니, 생색은 맥시입니다", "완승은 아니지만 자랑은 가능합니다"],
+    "쌍방 과실": ["둘 다 유죄, 둘 다 귀여운 벌금형", "쌍방의 눈치가 비행기 모드였습니다", "이번 싸움의 승자는 배달앱뿐입니다", "두 분 다 양심 업데이트가 필요합니다", "피고도 원고도 도긴개긴 월드컵 결승입니다"],
+    패소: ["원고의 양심도 출석해 주세요", "반전입니다. 이번 피고는 당신입니다", "편들기 실패. 증거가 너무 솔직했습니다", "내 편 서비스도 이건 못 막습니다", "판결봉이 조용히 당신을 가리킵니다", "오늘의 반전 주인공은 원고입니다"],
+    "증거 불충분": ["재판부도 눈치만 보는 중입니다", "사건이 너무 짧아 판결봉이 멈췄습니다", "목격자 한 명 또는 카톡 세 줄을 요청합니다", "판사도 궁금해서 다음 화를 기다립니다", "증거가 숨바꼭질 국가대표입니다"],
   },
 };
 
 const orders: Record<Outcome, string[]> = {
-  승소: ["피고는 진심 어린 사과와 원고가 고른 간식 1회를 지급할 것.", "피고는 다음 약속의 선택권을 원고에게 양도할 것.", "피고는 변명 없이 ‘그건 내가 미안해’를 먼저 말할 것."],
-  "일부 승소": ["피고는 사과하고, 원고도 오해한 부분 한 가지를 인정할 것.", "피고 70%, 원고 30%의 비율로 화해 비용을 부담할 것.", "두 사람은 각자 한 문장씩만 해명한 뒤 메뉴 선택권을 원고에게 줄 것."],
-  "쌍방 과실": ["양측은 반성 간식비를 절반씩 부담하고 먼저 웃는 쪽이 이길 것.", "서로의 잘못 하나씩만 인정하고 오늘의 논쟁을 종료할 것.", "양측 모두 사과문 대신 커피 두 잔을 들고 대화할 것."],
-  패소: ["원고는 쿨하게 잘못을 인정하고 작은 사과를 먼저 건넬 것.", "원고는 변명 24시간 금지 및 다음 약속 배려형에 처할 것.", "원고는 피고에게 사과하고 본인 몫의 간식을 직접 조달할 것."],
-  "증거 불충분": ["원고는 누가, 언제, 무엇을 했는지 보강하여 재접수할 것.", "판결을 보류하고 구체적인 대화 한 줄을 추가 제출할 것.", "양측은 섣부른 유죄 추정 없이 추가 진술을 준비할 것."],
+  승소: ["피고는 진심 어린 사과와 원고가 고른 간식 1회를 지급할 것.", "피고는 다음 약속의 선택권을 원고에게 양도할 것.", "피고는 변명 없이 ‘그건 내가 미안해’를 먼저 말할 것.", "피고는 원고의 생색 3회를 웃는 얼굴로 견딜 것.", "피고는 배달비까지 포함한 화해 디저트를 상납할 것.", "피고의 이의 신청은 커피와 함께 제출할 때만 접수할 것."],
+  "일부 승소": ["피고는 사과하고, 원고도 오해한 부분 한 가지를 인정할 것.", "피고 70%, 원고 30%의 비율로 화해 비용을 부담할 것.", "두 사람은 각자 한 문장씩만 해명한 뒤 메뉴 선택권을 원고에게 줄 것.", "원고는 7할만 의기양양할 수 있으며 과도한 세리머니는 금지할 것.", "피고는 디저트를 사고 원고는 ‘내가 다 맞진 않았네’를 아주 작게 말할 것."],
+  "쌍방 과실": ["양측은 반성 간식비를 절반씩 부담하고 먼저 웃는 쪽이 이길 것.", "서로의 잘못 하나씩만 인정하고 오늘의 논쟁을 종료할 것.", "양측 모두 사과문 대신 커피 두 잔을 들고 대화할 것.", "두 사람은 동시에 ‘내가 좀 그랬다’를 외친 뒤 화해할 것.", "쌍방 모두 단톡방 여론전을 멈추고 떡볶이 앞에서 휴전할 것."],
+  패소: ["원고는 쿨하게 잘못을 인정하고 작은 사과를 먼저 건넬 것.", "원고는 변명 24시간 금지 및 다음 약속 배려형에 처할 것.", "원고는 피고에게 사과하고 본인 몫의 간식을 직접 조달할 것.", "원고는 ‘설마 내가?’ 표정을 거두고 양심 업데이트를 설치할 것.", "원고는 오늘 하루 생색 금지 및 머쓱한 웃음 2회에 처할 것."],
+  "증거 불충분": ["원고는 누가, 언제, 무엇을 했는지 보강하여 재접수할 것.", "판결을 보류하고 구체적인 대화 한 줄을 추가 제출할 것.", "양측은 섣부른 유죄 추정 없이 추가 진술을 준비할 것.", "원고는 카톡 세 줄 또는 목격자 한 명을 데리고 시즌 2로 돌아올 것.", "본 사건은 예고편만 공개되었으므로 다음 화까지 판결봉을 충전할 것."],
 };
 
 const reasonOpeners: Record<Outcome, string[]> = {
@@ -85,9 +88,38 @@ const reasonOpeners: Record<Outcome, string[]> = {
 };
 
 const moodClosers: Record<Mood, string[]> = {
-  다정하게: ["마음을 지키면서도 관계를 다치게 하지 않는 대화가 필요합니다.", "누가 이기느냐보다 당신의 마음이 제대로 전해지는 것이 먼저입니다.", "오늘의 감정은 무시하지 말고 천천히 말해도 괜찮습니다."],
-  단호하게: ["같은 일이 반복되지 않도록 기준을 분명히 세워야 합니다.", "사과 없는 변명은 정상참작하지 않겠습니다.", "배려는 선택 사항이 아니라 관계의 기본 의무입니다."],
-  웃기게: ["본 재판부는 양심의 와이파이 상태까지 면밀히 살폈습니다.", "다음 사건 접수 전 간식 합의서 작성을 강력히 권고합니다.", "단, 배고픈 상태의 항소는 모두 기각합니다."],
+  다정하게: ["마음은 토닥이고, 억울함은 간식으로 조용히 입막음하겠습니다.", "오늘의 감정은 무죄이며 귀여운 투정 1회도 허가합니다.", "누가 이기느냐보다 일단 따뜻한 거 먹는 쪽을 권고합니다.", "재판부는 원고의 마음에 담요 한 장을 증거물로 제출합니다."],
+  단호하게: ["사과 없는 변명은 재판부의 귀에 자동 음소거됩니다.", "배려는 선택 옵션이 아니라 기본 설치 앱입니다.", "같은 일이 반복되면 다음 판결에는 간식 이자가 붙습니다.", "눈치 미탑재는 감형 사유가 아니라 업데이트 대상입니다."],
+  웃기게: ["본 재판부는 양심의 와이파이 상태까지 면밀히 살폈습니다.", "다음 사건 접수 전 간식 합의서 작성을 강력히 권고합니다.", "단, 배고픈 상태의 항소는 모두 기각합니다.", "재판부 전원이 웃음을 참지 못해 잠시 휴정했습니다.", "이 사건은 단톡방 배심원에게 넘기면 3시간은 불탈 사안입니다.", "억울함은 인정되나 흑역사 보존 기간은 최소 3년입니다."],
+};
+
+type CaseGenre = "먹거리" | "연락" | "직장" | "약속" | "연애" | "생활" | "미스터리";
+
+const genreRules: { genre: CaseGenre; pattern: RegExp }[] = [
+  { genre: "먹거리", pattern: /(먹|밥|커피|디저트|간식|치킨|피자|케이크|한입|메뉴|배달)/ },
+  { genre: "연락", pattern: /(연락|답장|카톡|메시지|읽씹|안읽씹|전화|릴스|디엠|DM)/i },
+  { genre: "직장", pattern: /(회사|팀장|상사|동료|퇴근|야근|회의|업무|일을|출근)/ },
+  { genre: "약속", pattern: /(약속|늦|지각|취소|기다|시간|예약)/ },
+  { genre: "연애", pattern: /(애인|남친|여친|썸|데이트|기념일|사랑|커플)/ },
+  { genre: "생활", pattern: /(청소|설거지|빨래|룸메|남편|아내|가족|집|화장실)/ },
+];
+
+const genreComments: Record<CaseGenre, string[]> = {
+  먹거리: ["‘한입만’의 법적 단위는 결코 반쪽이 아닙니다.", "음식 앞에서 드러난 본성은 포토샵으로도 지워지지 않습니다.", "재판부는 마지막 한 조각의 소유권을 매우 엄중히 봅니다."],
+  연락: ["휴대폰 배터리는 살아 있는데 답장만 사망한 점이 수상합니다.", "릴스 전송 능력과 답장 능력은 같은 손가락에서 나옵니다.", "읽씹은 짧지만 기다림은 장편 드라마였습니다."],
+  직장: ["퇴근 5분 전 업무 투척은 시간의 평화를 해치는 행위입니다.", "재판부 달력에는 ‘급한 일’이 어제부터 표시되어 있었습니다.", "월급에는 텔레파시 수당이 포함되어 있지 않습니다."],
+  약속: ["‘거의 다 왔어’가 아직 침대 위였다는 제보가 들어왔습니다.", "기다린 사람의 10분은 늦은 사람의 30분보다 깁니다.", "시간 약속은 고무줄이 아니므로 무한정 늘어나지 않습니다."],
+  연애: ["사랑은 자유지만 눈치는 필수 선택 과목입니다.", "기념일 기억장치는 선택이 아니라 기본 사양입니다.", "서운함을 자동 저장한 원고의 마음이 용량 초과 직전입니다."],
+  생활: ["집안일은 요정이 아니라 사람이 한다는 사실을 확인합니다.", "보이지 않는다고 사라진 것이 아니라 누군가 치운 것입니다.", "재판부는 휴지심 방치를 생활계의 미제 사건으로 분류합니다."],
+  미스터리: ["사건의 장르는 아직 미스터리지만 억울함의 존재는 확인됩니다.", "진술이 예측 불가라 재판부의 안경이 잠시 흐려졌습니다.", "이 사건은 단톡방에 올리면 장르가 즉시 코미디로 바뀔 가능성이 큽니다."],
+};
+
+const entertainmentLabels: Record<Outcome, string[]> = {
+  승소: ["오늘의 당당함 면허 발급", "단톡방 자랑 허가", "억울함 완전 방전"],
+  "일부 승소": ["소소한 생색 허용", "판정승 세리머니 가능", "억울함 부분 환불"],
+  "쌍방 과실": ["둘 다 반성 의자행", "화해 간식 공동구매", "도긴개긴 인증 완료"],
+  패소: ["머쓱함 1일 이용권", "사과 타이밍 포착", "흑역사 자동 저장"],
+  "증거 불충분": ["다음 화 예고편", "카톡 캡처 소환", "판결봉 일시정지"],
 };
 
 const compensationByOutcome: Record<Outcome, string[]> = {
@@ -110,11 +142,13 @@ const selfSignals = [
   { pattern: /(제가|내가).*(늦|깜빡|잊|취소|거짓말|화냈|화를 냈|먹었|잘못)/, label: "원고의 선행 실수" },
   { pattern: /(제가|내가).*(먼저|일방적|약속을 어|연락을 안)/, label: "원고의 책임 진술" },
   { pattern: /(제 잘못|내 잘못|제가 잘못|내가 잘못)/, label: "잘못 인정" },
+  { pattern: /(미안|사과해야|괜히|과했|심했|참지 못|욱해서)/, label: "원고의 양심 자진 출석" },
 ];
 const otherSignals = [
   { pattern: /(친구|애인|남친|여친|팀장|상사|동료|남편|아내|상대).*(무시|늦|먹|욕|막말|거짓말|취소|잠수|안 보|일을 주|소리)/, label: "상대의 문제 행동" },
   { pattern: /(반복|맨날|항상|또 |매번)/, label: "반복된 행동" },
   { pattern: /(약속을 어|연락 안|답장 안|말도 없이|허락 없이|반을 먹|퇴근.*일)/, label: "약속·배려 위반" },
+  { pattern: /(읽씹|안읽씹|지각|새치기|뺏|훔|놀렸|비꼬|무례|떠넘|강요|차별)/, label: "눈치·배려 실종" },
 ];
 
 function pick<T>(items: T[]) { return items[Math.floor(Math.random() * items.length)]; }
@@ -135,6 +169,7 @@ function buildVerdict(story: string, mood: Mood): Verdict {
   const [min, max] = ranges[outcome];
   const evidence = [...selfEvidence, ...otherEvidence].map((item) => item.label);
   if (!evidence.length) evidence.push("구체적 행동 단서 부족");
+  const genre = genreRules.find((rule) => rule.pattern.test(story))?.genre || "미스터리";
 
   return {
     outcome,
@@ -145,6 +180,9 @@ function buildVerdict(story: string, mood: Mood): Verdict {
     score: Math.floor(min + Math.random() * (max - min + 1)),
     conscience: pick(conscienceByOutcome[outcome]),
     evidence,
+    genre,
+    judgeComment: pick(genreComments[genre]),
+    entertainmentLabel: pick(entertainmentLabels[outcome]),
   };
 }
 
@@ -270,10 +308,10 @@ export default function CourtPage() {
       </header>
 
       <section className="hero" id="top">
-        <div className="eyebrow"><span>⚖</span> 24시간 당신 편</div>
+        <div className="eyebrow"><span>⚖</span> 법적 효력 0% · 과몰입 100%</div>
         <h1>그건 좀<br /><em>억울했겠다.</em></h1>
         <p className="hero-copy">
-          말 못 하고 삼킨 오늘의 억울함,<br />우리 재판부가 속 시원히 판결해 드려요.
+          진지한 고민은 잠시 내려놓고,<br />오늘의 사소한 억울함을 예능 판결로 날려버려요.
         </p>
 
         <form className="case-form" onSubmit={deliverVerdict}>
@@ -304,7 +342,7 @@ export default function CourtPage() {
           </div>
 
           <fieldset>
-            <legend>오늘의 판결 온도</legend>
+            <legend>오늘의 예능 재판부</legend>
             <div className="mood-picker">
               {moods.map((item) => (
                 <label key={item} className={mood === item ? "selected" : ""}>
@@ -318,58 +356,59 @@ export default function CourtPage() {
                       setResult(null);
                     }}
                   />
-                  <span>{item === "다정하게" ? "포근" : item === "단호하게" ? "엄격" : "유쾌"}</span>
-                  <strong>{item}</strong>
+                  <span>{item === "다정하게" ? "말랑한 편들기" : item === "단호하게" ? "웃픈 현실 체크" : "드립 과다 투여"}</span>
+                  <strong>{item === "다정하게" ? "포근 판사" : item === "단호하게" ? "팩폭 판사" : "예능 판사"}</strong>
                 </label>
               ))}
             </div>
           </fieldset>
 
           <button className="primary-button" disabled={!canSubmit || isJudging} type="submit">
-            <span>{isJudging ? "AI 재판부 심리 중..." : "판결 받아보기"}</span><b>→</b>
+            <span>{isJudging ? "예능 재판부 과몰입 중..." : "웃긴 판결 받아보기"}</span><b>→</b>
           </button>
+          <p className="entertainment-notice"><b>재미 전용</b> 실제 분쟁 해결이나 법률 판단 대신, 친구들과 웃고 공유할 가벼운 사건만 접수해 주세요.</p>
           {!canSubmit && story.length > 0 && <p className="form-hint">조금만 더 자세히 들려주세요.</p>}
         </form>
       </section>
 
       <section className="promise">
-        <p>판결소의 원칙</p>
+        <p>예능 재판부의 철칙</p>
         <div>
           <span>하나.</span>
-          <strong>당신의 감정을<br />사소하게 보지 않습니다.</strong>
+          <strong>사건은 사소해도<br />과몰입은 진심입니다.</strong>
         </div>
         <div>
           <span>둘.</span>
-          <strong>현실적인 해결보다<br />오늘은 속 시원함이 먼저입니다.</strong>
+          <strong>정답을 주기보다<br />웃고 공유할 판결을 만듭니다.</strong>
         </div>
-        <small>판결 결과는 로그인한 계정의 판결 보관소에 안전하게 저장돼요.</small>
+        <small>오직 재미와 위로를 위한 콘텐츠예요. 실제 법률·의료·안전 문제의 판단에는 사용할 수 없습니다.</small>
       </section>
 
       {isJudging && (
         <section className="ai-judging" id="ai-judging" aria-live="polite" aria-busy="true">
           <div className={`ai-character ai-character-step-${judgingStep}`} aria-hidden="true">
             <div className="ai-speech">
-              {judgingStep === 0 ? "음, 어디 보자…" : judgingStep === 1 ? "양쪽 말을 재는 중!" : judgingStep === 2 ? "재미도 놓칠 수 없지" : "판결합니다!"}
+              {judgingStep === 0 ? "오늘도 큰 사건이군…" : judgingStep === 1 ? "눈치의 알리바이 확인!" : judgingStep === 2 ? "드립 한 스푼? 두 스푼!" : "탕! 웃음형 선고!"}
             </div>
             <img src="/ai-judge-character.png" alt="" />
             <div className="ai-scan-line" />
             <div className="ai-spark spark-one">✦</div>
             <div className="ai-spark spark-two">✧</div>
           </div>
-          <span className="ai-label">AI COURT IN SESSION</span>
+          <span className="ai-label">COMEDY COURT IN SESSION</span>
           <h2>{judgingMessages[judgingStep]}<i className="thinking-dots">...</i></h2>
           <div className="judging-progress" aria-hidden="true">
             {judgingMessages.map((message, index) => <i key={message} className={index <= judgingStep ? "active" : ""} />)}
           </div>
-          <p>잠시만요. 편들어 판사가 사건의 균형을 맞추고 있어요.</p>
-          <small>현재는 프론트엔드 판결 규칙을 활용한 AI 콘셉트 연출입니다.</small>
+          <p>잠시만요. 편들어 판사가 사건을 예능으로 재구성하고 있어요.</p>
+          <small>결과는 오락용 자동 생성 콘텐츠이며 실제 사실 판단이나 조언이 아닙니다.</small>
         </section>
       )}
 
       {result && (
         <section className="result-section" id="verdict" aria-live="polite">
           <div className="result-heading">
-            <span>판결이 도착했습니다</span>
+            <span>법적 효력 0% · 공유 재미 100%</span>
             <h2>주문</h2>
           </div>
 
@@ -382,6 +421,7 @@ export default function CourtPage() {
               {result.outcome === "증거 불충분" ? <><span>증거</span><span>불충분</span></> : result.outcome.split(" ").map((word) => <span key={word}>{word}</span>)}
             </div>
             <p className="case-summary">“{shortStory}”</p>
+            <div className="case-genre">{result.genre} 사건 전담부</div>
             <h3>{result.title}</h3>
 
             <div className="ruling">
@@ -394,6 +434,11 @@ export default function CourtPage() {
               <p>{result.reason}</p>
             </div>
 
+            <div className="judge-aside">
+              <span>판사의 사족</span>
+              <p>“{result.judgeComment}”</p>
+            </div>
+
             <div className="evidence-row">
               <span>판단 근거</span>
               <div>{result.evidence.map((item) => <b key={item}>{item}</b>)}</div>
@@ -401,8 +446,8 @@ export default function CourtPage() {
 
             <div className="verdict-stats">
               <div><span>원고 주장 인정</span><strong>{result.score}%</strong></div>
-              <div><span>오늘의 위자료</span><strong>{result.compensation}</strong></div>
-              <div><span>피고의 양심</span><strong>{result.conscience}</strong></div>
+              <div><span>예능 위자료</span><strong>{result.compensation}</strong></div>
+              <div><span>오늘의 부가형</span><strong>{result.entertainmentLabel}</strong></div>
             </div>
 
             <div className="judge-sign">
@@ -416,7 +461,7 @@ export default function CourtPage() {
               {shared ? "판결문이 복사됐어요 ✓" : "판결 공유하기"}
             </button>
             <button className="appeal-button" type="button" onClick={() => deliverVerdict()}>
-              이 판결 아쉬워요 · 재심 요청
+              다른 드립으로 재심 요청
             </button>
             <button className="new-case-button" type="button" onClick={resetCourt}>
               새로운 사건 접수하기
@@ -427,8 +472,8 @@ export default function CourtPage() {
 
       <footer>
         <span className="footer-mark">내편</span>
-        <p>해결은 못 해도, 당신 편은 되어드릴게요.</p>
-        <small>본 서비스의 판결은 법적 효력이 없는 유쾌한 위로입니다.</small>
+        <p>해결은 못 해도, 웃음은 판결해 드릴게요.</p>
+        <small>본 서비스는 재미 전용입니다. 모든 판결의 법적 효력은 정확히 0%입니다.</small>
       </footer>
     </main>
   );
